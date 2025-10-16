@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies; 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,14 +8,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Claims; 
 using System.Threading.Tasks;
 
 
+#region Your Models and DbContext
 public class Student
 {
-    public int Id { get; set; } 
+    public int Id { get; set; }
     [Required]
-    public string FirstName { get; set; } = string.Empty; 
+    public string FirstName { get; set; } = string.Empty;
     [Required]
     public string LastName { get; set; } = string.Empty;
     public DateTime EnrollmentDate { get; set; }
@@ -21,12 +25,11 @@ public class Student
 
 public class Course
 {
-    public int Id { get; set; } 
+    public int Id { get; set; }
     [Required]
-    public string Title { get; set; } = string.Empty; 
+    public string Title { get; set; } = string.Empty;
     public int Credits { get; set; }
 }
-
 
 public class UniversityDbContext : DbContext
 {
@@ -35,20 +38,16 @@ public class UniversityDbContext : DbContext
     public DbSet<Student> Students { get; set; }
     public DbSet<Course> Courses { get; set; }
 }
+#endregion
 
 
-
+#region Your Controllers
 [ApiController]
-[Route("api/students")] 
+[Route("api/students")]
 public class StudentsController : ControllerBase
 {
-    
     private readonly UniversityDbContext _context;
-
-    public StudentsController(UniversityDbContext context)
-    {
-        _context = context;
-    }
+    public StudentsController(UniversityDbContext context) { _context = context; }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
@@ -56,72 +55,50 @@ public class StudentsController : ControllerBase
         return await _context.Students.ToListAsync();
     }
 
-
     [HttpGet("{id}")]
     public async Task<ActionResult<Student>> GetStudent(int id)
     {
         var student = await _context.Students.FindAsync(id);
-        if (student == null)
-        {
-            return NotFound(); 
-        }
+        if (student == null) { return NotFound(); }
         return student;
     }
 
-    
     [HttpPost]
     public async Task<ActionResult<Student>> CreateStudent(Student student)
     {
-        student.EnrollmentDate = DateTime.UtcNow; 
+        student.EnrollmentDate = DateTime.UtcNow;
         _context.Students.Add(student);
         await _context.SaveChangesAsync();
-
         return CreatedAtAction(nameof(GetStudent), new { id = student.Id }, student);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateStudent(int id, Student student)
     {
-        if (id != student.Id)
-        {
-            return BadRequest(); 
-        }
-
+        if (id != student.Id) { return BadRequest(); }
         _context.Entry(student).State = EntityState.Modified;
         await _context.SaveChangesAsync();
-
-        return NoContent(); 
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteStudent(int id)
     {
         var student = await _context.Students.FindAsync(id);
-        if (student == null)
-        {
-            return NotFound();
-        }
-
+        if (student == null) { return NotFound(); }
         _context.Students.Remove(student);
         await _context.SaveChangesAsync();
-
-        return NoContent(); 
+        return NoContent();
     }
 }
 
-
 [ApiController]
-[Route("api/courses")] 
+[Route("api/courses")]
 public class CoursesController : ControllerBase
 {
     private readonly UniversityDbContext _context;
+    public CoursesController(UniversityDbContext context) { _context = context; }
 
-    public CoursesController(UniversityDbContext context)
-    {
-        _context = context;
-    }
-
-   
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Course>>> GetCourses()
     {
@@ -136,6 +113,7 @@ public class CoursesController : ControllerBase
         return CreatedAtAction(nameof(GetCourses), new { id = course.Id }, course);
     }
 }
+#endregion
 
 
 [ApiController]
@@ -200,12 +178,10 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddDbContext<UniversityDbContext>(options =>
             options.UseInMemoryDatabase("UniversityDb"));
-
         builder.Services.AddSwaggerGen();
 
         var app = builder.Build();
 
-      
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
@@ -213,8 +189,13 @@ public class Program
         }
 
         app.UseHttpsRedirection();
-        app.MapControllers();
 
+        
+        app.UseAuthentication();
+        app.UseAuthorization();
+        
+
+        app.MapControllers();
         app.Run();
     }
 }

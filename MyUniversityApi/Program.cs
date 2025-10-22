@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies; 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -114,37 +112,100 @@ public class CoursesController : ControllerBase
     }
 }
 #endregion
-
-
-[ApiController]
-[Route("api/account")]
-public class AccountController : ControllerBase
+public class CoursesController : ControllerBase
 {
-    [HttpGet("login")]
-    public IActionResult Login(string returnUrl = "/")
+    private readonly UniversityDbContext _context;
+
+    public CoursesController(UniversityDbContext context)
     {
-        
-        return Challenge(new Microsoft.AspNetCore.Authentication.AuthenticationProperties { RedirectUri = returnUrl }, "Google");
+        _context = context;
     }
 
-    [HttpGet("logout")]
-    public async Task<IActionResult> Logout()
+   
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Course>>> GetCourses()
     {
-      
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return Ok("You have been logged out.");
+        return await _context.Courses.ToListAsync();
     }
 
-    
-    [HttpGet("profile")]
-    public IActionResult Profile()
+    [HttpPost]
+    public async Task<ActionResult<Course>> CreateCourse(Course course)
     {
-        if (User.Identity.IsAuthenticated)
-        {
-            var claims = User.Claims.Select(c => new { c.Type, c.Value });
-            return Ok(new { Message = "You are authenticated!", UserClaims = claims });
-        }
-        return Unauthorized("You are not authenticated.");
+        _context.Courses.Add(course);
+        await _context.SaveChangesAsync();
+        return CreatedAtAction(nameof(GetCourses), new { id = course.Id }, course);
+    }
+}
+public class CoursesController : ControllerBase
+{
+    private readonly UniversityDbContext _context;
+
+    public CoursesController(UniversityDbContext context)
+    {
+        _context = context;
+    }
+
+   
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Course>>> GetCourses()
+    {
+        return await _context.Courses.ToListAsync();
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<Course>> CreateCourse(Course course)
+    {
+        _context.Courses.Add(course);
+        await _context.SaveChangesAsync();
+        return CreatedAtAction(nameof(GetCourses), new { id = course.Id }, course);
+    }
+}
+public class CoursesController : ControllerBase
+{
+    private readonly UniversityDbContext _context;
+
+    public CoursesController(UniversityDbContext context)
+    {
+        _context = context;
+    }
+
+   
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Course>>> GetCourses()
+    {
+        return await _context.Courses.ToListAsync();
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<Course>> CreateCourse(Course course)
+    {
+        _context.Courses.Add(course);
+        await _context.SaveChangesAsync();
+        return CreatedAtAction(nameof(GetCourses), new { id = course.Id }, course);
+    }
+}
+public class CoursesController : ControllerBase
+{
+    private readonly UniversityDbContext _context;
+
+    public CoursesController(UniversityDbContext context)
+    {
+        _context = context;
+    }
+
+   
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Course>>> GetCourses()
+    {
+        return await _context.Courses.ToListAsync();
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<Course>> CreateCourse(Course course)
+    {
+        _context.Courses.Add(course);
+        await _context.SaveChangesAsync();
+        return CreatedAtAction(nameof(GetCourses), new { id = course.Id }, course);
     }
 }
 
@@ -156,32 +217,20 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        
-        builder.Services.AddAuthentication(options =>
-        {
-           
-            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = "Google";
-        })
-        .AddCookie() 
-        .AddGoogle(options =>
-        {
-            
-            options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-            options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-        });
-
-        
-        builder.Services.AddAuthorization();
-      
-
+     
         builder.Services.AddControllers();
+
+  
         builder.Services.AddDbContext<UniversityDbContext>(options =>
             options.UseInMemoryDatabase("UniversityDb"));
+
         builder.Services.AddSwaggerGen();
 
-        var app = builder.Build();
 
+
+var app = builder.Build();
+
+      
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
@@ -189,13 +238,9 @@ public class Program
         }
 
         app.UseHttpsRedirection();
-
-        
-        app.UseAuthentication();
-        app.UseAuthorization();
-        
-
         app.MapControllers();
+
         app.Run();
     }
 }
+

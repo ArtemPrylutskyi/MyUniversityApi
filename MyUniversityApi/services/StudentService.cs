@@ -43,7 +43,7 @@ namespace MyUniversityApi.Services
         {
             if (id != student.Id)
             {
-                return false; // Помилка запиту
+                return false; 
             }
             await _studentRepository.UpdateAsync(student);
             return true;

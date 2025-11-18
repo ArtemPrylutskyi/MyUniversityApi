@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MyUniversityApi.Models; 
+using MyUniversityApi.Models;
 
 namespace MyUniversityApi.Data
 {
@@ -9,5 +9,6 @@ namespace MyUniversityApi.Data
 
         public DbSet<Student> Students { get; set; }
         public DbSet<Course> Courses { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }

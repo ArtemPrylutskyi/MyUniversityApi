@@ -1,0 +1,10 @@
+﻿using MyUniversityApi.Models;
+
+namespace MyUniversityApi.Repositories
+{
+    public interface IUserRepository
+    {
+        Task<User?> GetByUsernameAsync(string username);
+        Task<User> AddAsync(User user);
+    }
+}

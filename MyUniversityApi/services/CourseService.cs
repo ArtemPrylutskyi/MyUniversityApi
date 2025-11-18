@@ -14,7 +14,7 @@ namespace MyUniversityApi.Services
 
         public async Task<Course> CreateCourseAsync(Course course)
         {
-            // Тут могла б бути бізнес-логіка, наприклад, перевірка, чи не існує вже курс з такою назвою
+        
             return await _courseRepository.AddAsync(course);
         }
 
